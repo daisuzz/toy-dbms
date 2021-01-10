@@ -32,7 +32,7 @@ public class BTree {
      * @return a B Tree node
      */
     public BTreeNode search(int k) {
-        if (this.root == null) {
+        if (root == null) {
             return null;
         }
         return root.search(k);
@@ -73,6 +73,29 @@ public class BTree {
             s.bTreeNodes[i].insertNonFull(k);
 
             root = s;
+        }
+    }
+
+    /**
+     * remove key in this B tree.
+     *
+     * @param k key
+     */
+    void remove(int k){
+
+        if(root == null){
+            System.out.println("The tree is empty");
+            return;
+        }
+
+        root.remove(k);
+
+        if(root.n ==0){
+            if(root.isLeaf){
+                root = null;
+            }else{
+                root = root.bTreeNodes[0];
+            }
         }
     }
 }
