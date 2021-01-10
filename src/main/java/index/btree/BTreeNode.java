@@ -1,5 +1,7 @@
 package index.btree;
 
+import com.sun.jdi.connect.Connector;
+
 public class BTreeNode {
 
     int t;
@@ -19,6 +21,14 @@ public class BTreeNode {
         this.keys = new int[2 * t - 1];
         this.bTreeNodes = new BTreeNode[2 * t];
         this.isLeaf = isLeaf;
+    }
+
+    boolean isFull(){
+        return n == 2 * t - 1;
+    }
+
+    boolean isEmpty(){
+        return n == 0;
     }
 
     /**
@@ -86,7 +96,7 @@ public class BTreeNode {
 
             // insert the ney key.
             keys[i + 1] = k;
-            n = n + 1;
+            n++;
         }
 
         if (!isLeaf) {
@@ -97,7 +107,7 @@ public class BTreeNode {
             }
 
             // if target child for insertion is full, split it.
-            if (bTreeNodes[i + 1].n == 2 * t - 1) {
+            if (bTreeNodes[i + 1].isFull()) {
 
                 splitChild(i + 1, bTreeNodes[i + 1]);
 
@@ -182,11 +192,14 @@ public class BTreeNode {
             return;
         }
 
+        boolean isLastKey = index == n;
+
         if (bTreeNodes[index].n < t) {
             fill(index);
         }
 
-        if (index >= n) {
+        // if the last child has merged
+        if (isLastKey && index > n) {
             bTreeNodes[index - 1].remove(k);
         } else {
             bTreeNodes[index].remove(k);
@@ -311,7 +324,7 @@ public class BTreeNode {
         BTreeNode sibling = bTreeNodes[index - 1];
 
         // move all keys in child one step ahead
-        if (child.n - 1 + 1 >= 0) System.arraycopy(child.keys, 0, child.keys, 1, child.n - 1 + 1);
+        if (child.n >= 0) System.arraycopy(child.keys, 0, child.keys, 1, child.n - 1 + 1);
 
         // if child is branch node, move all its child pointers one step ahead
         if (!child.isLeaf) {
@@ -385,12 +398,11 @@ public class BTreeNode {
             if (sibling.n + 1 >= 0) System.arraycopy(sibling.bTreeNodes, 0, child.bTreeNodes, t, sibling.n + 1);
         }
 
-        if (n + 1 - (index + 2) >= 0) {
-            System.arraycopy(bTreeNodes, index + 2, bTreeNodes, index + 2 - 1, n + 1 - (index + 2));
+        if (n - index - 1 >= 0) {
+            System.arraycopy(bTreeNodes, index + 2, bTreeNodes, index + 2 - 1, n - index - 1);
         }
 
         child.n += sibling.n + 1;
         n--;
     }
-
 }

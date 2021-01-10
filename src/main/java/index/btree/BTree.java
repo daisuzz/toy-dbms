@@ -49,17 +49,17 @@ public class BTree {
         if (root == null) {
             root = new BTreeNode(t, true);
             root.keys[0] = k;
-            root.n = root.n + 1;
+            root.n++;
             return;
         }
 
         // if root is not full, insert key into root.
-        if (root.n != 2 * t - 1) {
+        if (!root.isFull()) {
             root.insertNonFull(k);
         }
 
         // if root is full, split child
-        if (root.n == 2 * t - 1) {
+        if (root.isFull()) {
 
             BTreeNode s = new BTreeNode(t, false);
             s.bTreeNodes[0] = root;
@@ -90,7 +90,7 @@ public class BTree {
 
         root.remove(k);
 
-        if(root.n ==0){
+        if(root.isEmpty()){
             if(root.isLeaf){
                 root = null;
             }else{
