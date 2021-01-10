@@ -50,7 +50,7 @@ public class BTree {
         if (root == null) {
             root = new BTreeNode(t, true);
             root.keys[0] = k;
-            root.n++;
+            root.currentKeyNumbers++;
             return;
         }
 
