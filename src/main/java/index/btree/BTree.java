@@ -2,6 +2,8 @@ package index.btree;
 
 /**
  * @see <a href="https://www.geeksforgeeks.org/introduction-of-b-tree-2/">Introduction of B-Tree</a>
+ * @see <a href="https://www.geeksforgeeks.org/insert-operation-in-b-tree/">Insert Operation in B-Tree</a>
+ * @see <a href="https://www.geeksforgeeks.org/delete-operation-in-b-tree/">Delete Operation in B-Tree</a>
  */
 public class BTree {
 
@@ -31,7 +33,7 @@ public class BTree {
      * @return a B Tree node
      */
     public BTreeNode search(int k) {
-        if (this.root == null) {
+        if (root == null) {
             return null;
         }
         return root.search(k);
@@ -48,17 +50,17 @@ public class BTree {
         if (root == null) {
             root = new BTreeNode(t, true);
             root.keys[0] = k;
-            root.n = root.n + 1;
+            root.n++;
             return;
         }
 
         // if root is not full, insert key into root.
-        if (root.n != 2 * t - 1) {
+        if (!root.isFull()) {
             root.insertNonFull(k);
         }
 
         // if root is full, split child
-        if (root.n == 2 * t - 1) {
+        if (root.isFull()) {
 
             BTreeNode s = new BTreeNode(t, false);
             s.bTreeNodes[0] = root;
@@ -72,6 +74,29 @@ public class BTree {
             s.bTreeNodes[i].insertNonFull(k);
 
             root = s;
+        }
+    }
+
+    /**
+     * remove key in this B tree.
+     *
+     * @param k key
+     */
+    void remove(int k){
+
+        if(root == null){
+            System.out.println("The tree is empty");
+            return;
+        }
+
+        root.remove(k);
+
+        if(root.isEmpty()){
+            if(root.isLeaf){
+                root = null;
+            }else{
+                root = root.bTreeNodes[0];
+            }
         }
     }
 }
