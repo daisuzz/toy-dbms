@@ -8,7 +8,7 @@ public class BTreeNode {
     // the current number of keys
     int currentKeyNumbers;
 
-    int[] keys;
+    Item[] keys;
 
     BTreeNode[] bTreeNodes;
 
@@ -17,7 +17,7 @@ public class BTreeNode {
     public BTreeNode(int t, final boolean isLeaf) {
         this.t = t;
         this.currentKeyNumbers = 0;
-        this.keys = new int[2 * t - 1];
+        this.keys = new Item[2 * t - 1];
         this.bTreeNodes = new BTreeNode[2 * t];
         this.isLeaf = isLeaf;
     }
@@ -55,17 +55,21 @@ public class BTreeNode {
      * @param k key
      * @return a sub tree node
      */
-    BTreeNode search(int k) {
+    BTreeNode search(Item k) {
 
         int i = 0;
 
         // find first key greater or equal to k
-        while (i < currentKeyNumbers && keys[i] < k) {
+        while (i < currentKeyNumbers && keys[i].less(k)) {
             i++;
         }
 
+        if (keys[i] == null) {
+            return null;
+        }
+
         // if the found key equals to k
-        if (keys[i] == k) {
+        if (keys[i].equals(k)) {
             return this;
         }
 
@@ -81,14 +85,14 @@ public class BTreeNode {
     /**
      * insert a new key into a sub tree.
      */
-    void insertNonFull(int k) {
+    void insertNonFull(Item k) {
 
         int i = currentKeyNumbers - 1;
 
         if (isLeaf) {
 
             // move all greater keys to right
-            while (i >= 0 && keys[i] > k) {
+            while (i >= 0 && keys[i].greater(k)) {
                 keys[i + 1] = keys[i];
                 i--;
             }
@@ -101,7 +105,7 @@ public class BTreeNode {
         if (!isLeaf) {
 
             // find target child for insertion.
-            while (i >= 0 && keys[i] > k) {
+            while (i >= 0 && keys[i].greater(k)) {
                 i--;
             }
 
@@ -110,7 +114,7 @@ public class BTreeNode {
 
                 splitChild(i + 1, bTreeNodes[i + 1]);
 
-                if (keys[i + 1] < k) {
+                if (keys[i + 1].less(k)) {
                     i++;
                 }
             }
@@ -160,9 +164,9 @@ public class BTreeNode {
      * @param k key
      * @return first key index that is greater or equals to k.
      */
-    int findKeyIndex(int k) {
+    int findKeyIndex(Item k) {
         int index = 0;
-        while (index < currentKeyNumbers && keys[index] < k) {
+        while (index < currentKeyNumbers && keys[index].less(k)) {
             index++;
         }
         return index;
@@ -173,11 +177,11 @@ public class BTreeNode {
      *
      * @param k key
      */
-    void remove(int k) {
+    void remove(Item k) {
 
         int index = findKeyIndex(k);
 
-        if (index < currentKeyNumbers && keys[index] == k) {
+        if (index < currentKeyNumbers && keys[index].equals(k)) {
             if (isLeaf) {
                 removeFromLeaf(index);
             } else {
@@ -225,11 +229,11 @@ public class BTreeNode {
      */
     void removeFromNonLeaf(int index) {
 
-        int k = keys[index];
+        Item k = keys[index];
 
         // 2(a)
         if (bTreeNodes[index].currentKeyNumbers >= t) {
-            int predecessor = getPredecessor(index);
+            Item predecessor = getPredecessor(index);
             keys[index] = predecessor;
             bTreeNodes[index].remove(predecessor);
             return;
@@ -237,7 +241,7 @@ public class BTreeNode {
 
         // 2(b)
         if (bTreeNodes[index + 1].currentKeyNumbers >= t) {
-            int successor = getSuccessor(index);
+            Item successor = getSuccessor(index);
             keys[index] = successor;
             bTreeNodes[index + 1].remove(successor);
         }
@@ -253,7 +257,7 @@ public class BTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    int getPredecessor(int index) {
+    Item getPredecessor(int index) {
 
         // get the right most leaf node
         BTreeNode current = bTreeNodes[index];
@@ -271,7 +275,7 @@ public class BTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    int getSuccessor(int index) {
+    Item getSuccessor(int index) {
 
         // get the left most leaf node
         BTreeNode current = bTreeNodes[index + 1];

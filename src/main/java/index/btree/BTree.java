@@ -32,7 +32,7 @@ public class BTree {
      * @param k key
      * @return a B Tree node
      */
-    public BTreeNode search(int k) {
+    public BTreeNode search(Item k) {
         if (root == null) {
             return null;
         }
@@ -44,7 +44,7 @@ public class BTree {
      *
      * @param k a new key
      */
-    public void insert(int k) {
+    public void insert(Item k) {
 
         // if B tree is empty, allocate memory for root and then insert key.
         if (root == null) {
@@ -69,7 +69,7 @@ public class BTree {
             s.splitChild(0, root);
 
             int i = 0;
-            if (s.keys[0] < k) {
+            if (s.keys[0].less(k)) {
                 i++;
             }
             s.bTreeNodes[i].insertNonFull(k);
@@ -83,7 +83,7 @@ public class BTree {
      *
      * @param k key
      */
-    void remove(int k){
+    void remove(Item k){
 
         if(root == null){
             System.out.println("The tree is empty");
