@@ -1,23 +1,18 @@
-package index.btree;
+package index.bplustree;
 
-/**
- * @see <a href="https://www.geeksforgeeks.org/introduction-of-b-tree-2/">Introduction of B-Tree</a>
- * @see <a href="https://www.geeksforgeeks.org/insert-operation-in-b-tree/">Insert Operation in B-Tree</a>
- * @see <a href="https://www.geeksforgeeks.org/delete-operation-in-b-tree/">Delete Operation in B-Tree</a>
- */
-public class BTree {
+public class BPlusTree {
 
-    public BTreeNode root;
+    public BPlusTreeNode root;
 
     public int t;
 
-    public BTree(int t) {
+    public BPlusTree(int t) {
         this.root = null;
         this.t = t;
     }
 
     /**
-     * traverse B Tree.
+     * traverse B+ Tree.
      */
     public void traverse() {
         if (this.root != null) {
@@ -27,12 +22,12 @@ public class BTree {
     }
 
     /**
-     * search a B Tree node by the key.
+     * search a B+ Tree node by the key.
      *
      * @param k key
-     * @return a B Tree node
+     * @return a B+ Tree node
      */
-    public BTreeNode search(int k) {
+    public BPlusTreeNode search(int k) {
         if (root == null) {
             return null;
         }
@@ -40,15 +35,15 @@ public class BTree {
     }
 
     /**
-     * insert a new key into this B tree.
+     * insert a new key into this B+ tree.
      *
      * @param k a new key
      */
     public void insert(int k) {
 
-        // if B tree is empty, allocate memory for root and then insert key.
+        // if B+ tree is empty, allocate memory for root and then insert key.
         if (root == null) {
-            root = new BTreeNode(t, true);
+            root = new BPlusTreeNode(t, true);
             root.keys[0] = k;
             root.currentKeyNumbers++;
             return;
@@ -63,7 +58,7 @@ public class BTree {
         // if root is full, split child
         if (root.isFull()) {
 
-            BTreeNode s = new BTreeNode(t, false);
+            BPlusTreeNode s = new BPlusTreeNode(t, false);
             s.bTreeNodes[0] = root;
 
             s.splitChild(0, root);
@@ -79,7 +74,7 @@ public class BTree {
     }
 
     /**
-     * remove key in this B tree.
+     * remove key in this B+ tree.
      *
      * @param k key
      */

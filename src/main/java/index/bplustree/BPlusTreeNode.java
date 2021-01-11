@@ -1,6 +1,10 @@
-package index.btree;
+package index.bplustree;
 
-public class BTreeNode {
+import java.sql.SQLOutput;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+public class BPlusTreeNode {
 
     // degree
     int t;
@@ -10,23 +14,26 @@ public class BTreeNode {
 
     int[] keys;
 
-    BTreeNode[] bTreeNodes;
+    BPlusTreeNode[] bTreeNodes;
 
     boolean isLeaf;
 
-    public BTreeNode(int t, final boolean isLeaf) {
+    BPlusTreeNode next;
+
+    public BPlusTreeNode(int t, final boolean isLeaf) {
         this.t = t;
         this.currentKeyNumbers = 0;
         this.keys = new int[2 * t - 1];
-        this.bTreeNodes = new BTreeNode[2 * t];
+        this.bTreeNodes = new BPlusTreeNode[2 * t];
         this.isLeaf = isLeaf;
+        this.next = null;
     }
 
-    boolean isFull(){
+    boolean isFull() {
         return currentKeyNumbers == 2 * t - 1;
     }
 
-    boolean isEmpty(){
+    boolean isEmpty() {
         return currentKeyNumbers == 0;
     }
 
@@ -47,6 +54,13 @@ public class BTreeNode {
         if (!isLeaf) {
             bTreeNodes[i].traverse();
         }
+        if (isLeaf) {
+            if( next != null){
+                System.out.println("next node has: " + Arrays.stream(next.keys).limit(next.currentKeyNumbers).mapToObj(Integer::toString).collect(Collectors.joining(",")));
+                return;
+            }
+            System.out.println("next node has: " + next);
+        }
     }
 
     /**
@@ -55,7 +69,7 @@ public class BTreeNode {
      * @param k key
      * @return a sub tree node
      */
-    BTreeNode search(int k) {
+    BPlusTreeNode search(int k) {
 
         int i = 0;
 
@@ -124,10 +138,10 @@ public class BTreeNode {
      * @param index index of y.
      * @param y     child node of this node
      */
-    void splitChild(int index, BTreeNode y) {
+    void splitChild(int index, BPlusTreeNode y) {
 
         // create new node which stores t-1 keys of y.
-        BTreeNode z = new BTreeNode(y.t, y.isLeaf);
+        BPlusTreeNode z = new BPlusTreeNode(y.t, y.isLeaf);
         z.currentKeyNumbers = t - 1;
 
         // copy the last t-1 keys of y to z.
@@ -141,9 +155,14 @@ public class BTreeNode {
         y.currentKeyNumbers = t - 1;
 
         // create space for new child.
-        if (currentKeyNumbers - index >= 0) System.arraycopy(bTreeNodes, index + 1, bTreeNodes, index + 2, currentKeyNumbers - index);
+        if (currentKeyNumbers - index >= 0)
+            System.arraycopy(bTreeNodes, index + 1, bTreeNodes, index + 2, currentKeyNumbers - index);
 
         bTreeNodes[index + 1] = z;
+        if (y.isLeaf) {
+            z.next = y.next;
+            y.next = z;
+        }
 
         // find the location of new key and move all greater keys to right.
         if (currentKeyNumbers - index >= 0) System.arraycopy(keys, index, keys, index + 1, currentKeyNumbers - index);
@@ -213,7 +232,8 @@ public class BTreeNode {
     void removeFromLeaf(int index) {
 
         // move all keys after the index-th position one place backward.
-        if (currentKeyNumbers - (index + 1) >= 0) System.arraycopy(keys, index + 1, keys, index, currentKeyNumbers - (index + 1));
+        if (currentKeyNumbers - (index + 1) >= 0)
+            System.arraycopy(keys, index + 1, keys, index, currentKeyNumbers - (index + 1));
 
         currentKeyNumbers--;
     }
@@ -256,7 +276,7 @@ public class BTreeNode {
     int getPredecessor(int index) {
 
         // get the right most leaf node
-        BTreeNode current = bTreeNodes[index];
+        BPlusTreeNode current = bTreeNodes[index];
         while (!current.isLeaf) {
             current = current.bTreeNodes[current.currentKeyNumbers];
         }
@@ -274,7 +294,7 @@ public class BTreeNode {
     int getSuccessor(int index) {
 
         // get the left most leaf node
-        BTreeNode current = bTreeNodes[index + 1];
+        BPlusTreeNode current = bTreeNodes[index + 1];
         while (!current.isLeaf) {
             current = current.bTreeNodes[0];
         }
@@ -319,15 +339,17 @@ public class BTreeNode {
      */
     void borrowFromPrev(int index) {
 
-        BTreeNode child = bTreeNodes[index];
-        BTreeNode sibling = bTreeNodes[index - 1];
+        BPlusTreeNode child = bTreeNodes[index];
+        BPlusTreeNode sibling = bTreeNodes[index - 1];
 
         // move all keys in child one step ahead
-        if (child.currentKeyNumbers >= 0) System.arraycopy(child.keys, 0, child.keys, 1, child.currentKeyNumbers - 1 + 1);
+        if (child.currentKeyNumbers >= 0)
+            System.arraycopy(child.keys, 0, child.keys, 1, child.currentKeyNumbers - 1 + 1);
 
         // if child is internal node, move all its child pointers one step ahead
         if (!child.isLeaf) {
-            if (child.currentKeyNumbers + 1 >= 0) System.arraycopy(child.bTreeNodes, 0, child.bTreeNodes, 1, child.currentKeyNumbers + 1);
+            if (child.currentKeyNumbers + 1 >= 0)
+                System.arraycopy(child.bTreeNodes, 0, child.bTreeNodes, 1, child.currentKeyNumbers + 1);
         }
 
         // set child's first key equal to current node (index-1)-th key
@@ -351,8 +373,8 @@ public class BTreeNode {
      */
     void borrowFromNext(int index) {
 
-        BTreeNode child = bTreeNodes[index];
-        BTreeNode sibling = bTreeNodes[index + 1];
+        BPlusTreeNode child = bTreeNodes[index];
+        BPlusTreeNode sibling = bTreeNodes[index + 1];
 
         // move the index-th key from this node to the child last key
         child.keys[child.currentKeyNumbers] = keys[index];
@@ -366,11 +388,13 @@ public class BTreeNode {
         keys[index] = sibling.keys[0];
 
         // move all keys in sibling one step behind
-        if (sibling.currentKeyNumbers - 1 >= 0) System.arraycopy(sibling.keys, 1, sibling.keys, 0, sibling.currentKeyNumbers - 1);
+        if (sibling.currentKeyNumbers - 1 >= 0)
+            System.arraycopy(sibling.keys, 1, sibling.keys, 0, sibling.currentKeyNumbers - 1);
 
         // move the child pointers one step behind
         if (!sibling.isLeaf) {
-            if (sibling.currentKeyNumbers >= 0) System.arraycopy(sibling.bTreeNodes, 1, sibling.bTreeNodes, 0, sibling.currentKeyNumbers);
+            if (sibling.currentKeyNumbers >= 0)
+                System.arraycopy(sibling.bTreeNodes, 1, sibling.bTreeNodes, 0, sibling.currentKeyNumbers);
         }
 
         child.currentKeyNumbers += 1;
@@ -384,21 +408,29 @@ public class BTreeNode {
      */
     void merge(int index) {
 
-        BTreeNode child = bTreeNodes[index];
-        BTreeNode sibling = bTreeNodes[index + 1];
+        BPlusTreeNode child = bTreeNodes[index];
+        BPlusTreeNode sibling = bTreeNodes[index + 1];
 
         child.keys[t - 1] = keys[index];
 
+        // move all keys from the sibling node to the child node.
         if (sibling.currentKeyNumbers >= 0) {
             System.arraycopy(sibling.keys, 0, child.keys, t, sibling.currentKeyNumbers);
         }
 
+        // if child node is internal node, move all children node from the sibling node to the child node.
         if (!child.isLeaf) {
-            if (sibling.currentKeyNumbers + 1 >= 0) System.arraycopy(sibling.bTreeNodes, 0, child.bTreeNodes, t, sibling.currentKeyNumbers + 1);
+            if (sibling.currentKeyNumbers + 1 >= 0)
+                System.arraycopy(sibling.bTreeNodes, 0, child.bTreeNodes, t, sibling.currentKeyNumbers + 1);
         }
 
+        // remove the sibling node
         if (currentKeyNumbers - index - 1 >= 0) {
             System.arraycopy(bTreeNodes, index + 2, bTreeNodes, index + 2 - 1, currentKeyNumbers - index - 1);
+        }
+
+        if(child.isLeaf){
+            child.next = sibling.next;
         }
 
         child.currentKeyNumbers += sibling.currentKeyNumbers + 1;
