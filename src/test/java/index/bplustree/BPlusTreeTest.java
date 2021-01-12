@@ -1,5 +1,6 @@
 package index.bplustree;
 
+import index.key.IntegerKey;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,48 +19,48 @@ class BPlusTreeTest {
         [10,20]->[40,50]->[70,80,90]
         */
         BPlusTree t = new BPlusTree(3);
-        t.insert(10);
-        t.insert(20);
-        t.insert(30);
-        t.insert(40);
-        t.insert(50);
-        t.insert(60);
-        t.insert(70);
-        t.insert(80);
-        t.insert(90);
+        t.insert(new IntegerKey(10));
+        t.insert(new IntegerKey(20));
+        t.insert(new IntegerKey(30));
+        t.insert(new IntegerKey(40));
+        t.insert(new IntegerKey(50));
+        t.insert(new IntegerKey(60));
+        t.insert(new IntegerKey(70));
+        t.insert(new IntegerKey(80));
+        t.insert(new IntegerKey(90));
 
         t.traverse();
 
-        assertNull(t.search(1));
-        assertNotNull(t.search(10));
+        assertNull(t.search(new IntegerKey(1)));
+        assertNotNull(t.search(new IntegerKey(10)));
     }
 
     @Test
     void remove() {
 
         BPlusTree t = new BPlusTree(3);
-        t.insert(10);
-        t.insert(20);
-        t.insert(30);
-        t.insert(40);
-        t.insert(50);
-        t.insert(60);
-        t.insert(70);
-        t.insert(80);
-        t.insert(90);
+        t.insert(new IntegerKey(10));
+        t.insert(new IntegerKey(20));
+        t.insert(new IntegerKey(30));
+        t.insert(new IntegerKey(40));
+        t.insert(new IntegerKey(50));
+        t.insert(new IntegerKey(60));
+        t.insert(new IntegerKey(70));
+        t.insert(new IntegerKey(80));
+        t.insert(new IntegerKey(90));
 
         t.traverse();
 
-        t.remove(40);
+        t.remove(new IntegerKey(40));
         t.traverse();
 
-        t.remove(70);
+        t.remove(new IntegerKey(70));
         t.traverse();
 
-        t.remove(80);
+        t.remove(new IntegerKey(80));
         t.traverse();
 
-        t.remove(90);
+        t.remove(new IntegerKey(90));
         t.traverse();
 
     }

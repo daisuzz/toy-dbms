@@ -1,5 +1,7 @@
 package index.btree;
 
+import index.key.Key;
+
 /**
  * @see <a href="https://www.geeksforgeeks.org/introduction-of-b-tree-2/">Introduction of B-Tree</a>
  * @see <a href="https://www.geeksforgeeks.org/insert-operation-in-b-tree/">Insert Operation in B-Tree</a>
@@ -32,7 +34,7 @@ public class BTree {
      * @param k key
      * @return a B Tree node
      */
-    public BTreeNode search(Item k) {
+    public BTreeNode search(Key k) {
         if (root == null) {
             return null;
         }
@@ -44,7 +46,7 @@ public class BTree {
      *
      * @param k a new key
      */
-    public void insert(Item k) {
+    public void insert(Key k) {
 
         // if B tree is empty, allocate memory for root and then insert key.
         if (root == null) {
@@ -83,7 +85,7 @@ public class BTree {
      *
      * @param k key
      */
-    void remove(Item k){
+    void remove(Key k){
 
         if(root == null){
             System.out.println("The tree is empty");

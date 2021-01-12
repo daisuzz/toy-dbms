@@ -1,6 +1,7 @@
 package index.bplustree;
 
-import java.sql.SQLOutput;
+import index.key.Key;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -9,10 +10,9 @@ public class BPlusTreeNode {
     // degree
     int t;
 
-    // the current number of keys
     int currentKeyNumbers;
 
-    int[] keys;
+    Key[] keys;
 
     BPlusTreeNode[] bTreeNodes;
 
@@ -23,7 +23,7 @@ public class BPlusTreeNode {
     public BPlusTreeNode(int t, final boolean isLeaf) {
         this.t = t;
         this.currentKeyNumbers = 0;
-        this.keys = new int[2 * t - 1];
+        this.keys = new Key[2 * t - 1];
         this.bTreeNodes = new BPlusTreeNode[2 * t];
         this.isLeaf = isLeaf;
         this.next = null;
@@ -56,10 +56,8 @@ public class BPlusTreeNode {
         }
         if (isLeaf) {
             if( next != null){
-                System.out.println("next node has: " + Arrays.stream(next.keys).limit(next.currentKeyNumbers).mapToObj(Integer::toString).collect(Collectors.joining(",")));
-                return;
+                System.out.println("next node has: " + Arrays.stream(next.keys).limit(next.currentKeyNumbers).map(Key::toString).collect(Collectors.joining(",")));
             }
-            System.out.println("next node has: " + next);
         }
     }
 
@@ -69,17 +67,17 @@ public class BPlusTreeNode {
      * @param k key
      * @return a sub tree node
      */
-    BPlusTreeNode search(int k) {
+    BPlusTreeNode search(Key k) {
 
         int i = 0;
 
         // find first key greater or equal to k
-        while (i < currentKeyNumbers && keys[i] < k) {
+        while (i < currentKeyNumbers && keys[i].less(k)) {
             i++;
         }
 
         // if the found key equals to k
-        if (keys[i] == k) {
+        if (keys[i].equals(k)) {
             return this;
         }
 
@@ -95,14 +93,14 @@ public class BPlusTreeNode {
     /**
      * insert a new key into a sub tree.
      */
-    void insertNonFull(int k) {
+    void insertNonFull(Key k) {
 
         int i = currentKeyNumbers - 1;
 
         if (isLeaf) {
 
             // move all greater keys to right
-            while (i >= 0 && keys[i] > k) {
+            while (i >= 0 && keys[i].greater(k)) {
                 keys[i + 1] = keys[i];
                 i--;
             }
@@ -115,7 +113,7 @@ public class BPlusTreeNode {
         if (!isLeaf) {
 
             // find target child for insertion.
-            while (i >= 0 && keys[i] > k) {
+            while (i >= 0 && keys[i].greater(k)) {
                 i--;
             }
 
@@ -124,7 +122,7 @@ public class BPlusTreeNode {
 
                 splitChild(i + 1, bTreeNodes[i + 1]);
 
-                if (keys[i + 1] < k) {
+                if (keys[i + 1].less(k)) {
                     i++;
                 }
             }
@@ -179,9 +177,9 @@ public class BPlusTreeNode {
      * @param k key
      * @return first key index that is greater or equals to k.
      */
-    int findKeyIndex(int k) {
+    int findKeyIndex(Key k) {
         int index = 0;
-        while (index < currentKeyNumbers && keys[index] < k) {
+        while (index < currentKeyNumbers && keys[index].less(k)) {
             index++;
         }
         return index;
@@ -192,11 +190,11 @@ public class BPlusTreeNode {
      *
      * @param k key
      */
-    void remove(int k) {
+    void remove(Key k) {
 
         int index = findKeyIndex(k);
 
-        if (index < currentKeyNumbers && keys[index] == k) {
+        if (index < currentKeyNumbers && keys[index].equals(k)) {
             if (isLeaf) {
                 removeFromLeaf(index);
             } else {
@@ -245,11 +243,11 @@ public class BPlusTreeNode {
      */
     void removeFromNonLeaf(int index) {
 
-        int k = keys[index];
+        Key k = keys[index];
 
         // 2(a)
         if (bTreeNodes[index].currentKeyNumbers >= t) {
-            int predecessor = getPredecessor(index);
+            Key predecessor = getPredecessor(index);
             keys[index] = predecessor;
             bTreeNodes[index].remove(predecessor);
             return;
@@ -257,7 +255,7 @@ public class BPlusTreeNode {
 
         // 2(b)
         if (bTreeNodes[index + 1].currentKeyNumbers >= t) {
-            int successor = getSuccessor(index);
+            Key successor = getSuccessor(index);
             keys[index] = successor;
             bTreeNodes[index + 1].remove(successor);
         }
@@ -273,7 +271,7 @@ public class BPlusTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    int getPredecessor(int index) {
+    Key getPredecessor(int index) {
 
         // get the right most leaf node
         BPlusTreeNode current = bTreeNodes[index];
@@ -291,7 +289,7 @@ public class BPlusTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    int getSuccessor(int index) {
+    Key getSuccessor(int index) {
 
         // get the left most leaf node
         BPlusTreeNode current = bTreeNodes[index + 1];

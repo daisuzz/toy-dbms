@@ -1,14 +1,15 @@
 package index.btree;
 
+import index.key.Key;
+
 public class BTreeNode {
 
     // degree
     int t;
 
-    // the current number of keys
     int currentKeyNumbers;
 
-    Item[] keys;
+    Key[] keys;
 
     BTreeNode[] bTreeNodes;
 
@@ -17,7 +18,7 @@ public class BTreeNode {
     public BTreeNode(int t, final boolean isLeaf) {
         this.t = t;
         this.currentKeyNumbers = 0;
-        this.keys = new Item[2 * t - 1];
+        this.keys = new Key[2 * t - 1];
         this.bTreeNodes = new BTreeNode[2 * t];
         this.isLeaf = isLeaf;
     }
@@ -35,41 +36,41 @@ public class BTreeNode {
      */
     void traverse() {
 
-        int i;
+        int index;
 
-        for (i = 0; i < currentKeyNumbers; i++) {
+        for (index = 0; index < currentKeyNumbers; index++) {
             if (!isLeaf) {
-                bTreeNodes[i].traverse();
+                bTreeNodes[index].traverse();
             }
-            System.out.print(keys[i] + " ");
+            System.out.print(keys[index] + " ");
         }
 
         if (!isLeaf) {
-            bTreeNodes[i].traverse();
+            bTreeNodes[index].traverse();
         }
     }
 
     /**
      * search a sub tree node by key.
      *
-     * @param k key
+     * @param key key
      * @return a sub tree node
      */
-    BTreeNode search(Item k) {
+    BTreeNode search(Key key) {
 
-        int i = 0;
+        int index = 0;
 
         // find first key greater or equal to k
-        while (i < currentKeyNumbers && keys[i].less(k)) {
-            i++;
+        while (index < currentKeyNumbers && keys[index].less(key)) {
+            index++;
         }
 
-        if (keys[i] == null) {
+        if (keys[index] == null) {
             return null;
         }
 
         // if the found key equals to k
-        if (keys[i].equals(k)) {
+        if (keys[index].equals(key)) {
             return this;
         }
 
@@ -79,46 +80,48 @@ public class BTreeNode {
         }
 
         // go to child node
-        return bTreeNodes[i].search(k);
+        return bTreeNodes[index].search(key);
     }
 
     /**
      * insert a new key into a sub tree.
+     *
+     * @param key key
      */
-    void insertNonFull(Item k) {
+    void insertNonFull(Key key) {
 
-        int i = currentKeyNumbers - 1;
+        int index = currentKeyNumbers - 1;
 
         if (isLeaf) {
 
             // move all greater keys to right
-            while (i >= 0 && keys[i].greater(k)) {
-                keys[i + 1] = keys[i];
-                i--;
+            while (index >= 0 && keys[index].greater(key)) {
+                keys[index + 1] = keys[index];
+                index--;
             }
 
             // insert the ney key.
-            keys[i + 1] = k;
+            keys[index + 1] = key;
             currentKeyNumbers++;
         }
 
         if (!isLeaf) {
 
             // find target child for insertion.
-            while (i >= 0 && keys[i].greater(k)) {
-                i--;
+            while (index >= 0 && keys[index].greater(key)) {
+                index--;
             }
 
             // if target child for insertion is full, split it.
-            if (bTreeNodes[i + 1].isFull()) {
+            if (bTreeNodes[index + 1].isFull()) {
 
-                splitChild(i + 1, bTreeNodes[i + 1]);
+                splitChild(index + 1, bTreeNodes[index + 1]);
 
-                if (keys[i + 1].less(k)) {
-                    i++;
+                if (keys[index + 1].less(key)) {
+                    index++;
                 }
             }
-            bTreeNodes[i + 1].insertNonFull(k);
+            bTreeNodes[index + 1].insertNonFull(key);
         }
     }
 
@@ -164,7 +167,7 @@ public class BTreeNode {
      * @param k key
      * @return first key index that is greater or equals to k.
      */
-    int findKeyIndex(Item k) {
+    int findKeyIndex(Key k) {
         int index = 0;
         while (index < currentKeyNumbers && keys[index].less(k)) {
             index++;
@@ -177,7 +180,7 @@ public class BTreeNode {
      *
      * @param k key
      */
-    void remove(Item k) {
+    void remove(Key k) {
 
         int index = findKeyIndex(k);
 
@@ -229,11 +232,11 @@ public class BTreeNode {
      */
     void removeFromNonLeaf(int index) {
 
-        Item k = keys[index];
+        Key k = keys[index];
 
         // 2(a)
         if (bTreeNodes[index].currentKeyNumbers >= t) {
-            Item predecessor = getPredecessor(index);
+            Key predecessor = getPredecessor(index);
             keys[index] = predecessor;
             bTreeNodes[index].remove(predecessor);
             return;
@@ -241,7 +244,7 @@ public class BTreeNode {
 
         // 2(b)
         if (bTreeNodes[index + 1].currentKeyNumbers >= t) {
-            Item successor = getSuccessor(index);
+            Key successor = getSuccessor(index);
             keys[index] = successor;
             bTreeNodes[index + 1].remove(successor);
         }
@@ -257,7 +260,7 @@ public class BTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    Item getPredecessor(int index) {
+    Key getPredecessor(int index) {
 
         // get the right most leaf node
         BTreeNode current = bTreeNodes[index];
@@ -275,7 +278,7 @@ public class BTreeNode {
      * @param index index of key
      * @return index of the predecessor key
      */
-    Item getSuccessor(int index) {
+    Key getSuccessor(int index) {
 
         // get the left most leaf node
         BTreeNode current = bTreeNodes[index + 1];

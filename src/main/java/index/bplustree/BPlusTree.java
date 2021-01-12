@@ -1,5 +1,7 @@
 package index.bplustree;
 
+import index.key.Key;
+
 public class BPlusTree {
 
     public BPlusTreeNode root;
@@ -27,7 +29,7 @@ public class BPlusTree {
      * @param k key
      * @return a B+ Tree node
      */
-    public BPlusTreeNode search(int k) {
+    public BPlusTreeNode search(Key k) {
         if (root == null) {
             return null;
         }
@@ -39,7 +41,7 @@ public class BPlusTree {
      *
      * @param k a new key
      */
-    public void insert(int k) {
+    public void insert(Key k) {
 
         // if B+ tree is empty, allocate memory for root and then insert key.
         if (root == null) {
@@ -64,7 +66,7 @@ public class BPlusTree {
             s.splitChild(0, root);
 
             int i = 0;
-            if (s.keys[0] < k) {
+            if (s.keys[0].less(k)) {
                 i++;
             }
             s.bTreeNodes[i].insertNonFull(k);
@@ -78,7 +80,7 @@ public class BPlusTree {
      *
      * @param k key
      */
-    void remove(int k){
+    void remove(Key k){
 
         if(root == null){
             System.out.println("The tree is empty");
